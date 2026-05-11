@@ -1,22 +1,47 @@
 # Chatterbox
 
-Small project that provides a LLM inside docker container.
+Проект для развёртывания [Gemma 2](https://doi.org/10.48550/arXiv.2408.00118) внутри контейнера.
 
-- Model: [DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf](https://huggingface.co/SandLogicTechnologies/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/tree/main)
+- Веса модели (поместить в папку репозитория): [gemma-2-2b-it-Q6_K.gguf](https://drive.google.com/file/d/1zrdzqr0MCe2_6cgYEfAkmnN1YAgwN-y3/view?usp=sharing)
 
-- Base image: [ghcr.io/ggerganov/llama.cpp:full](https://github.com/ggml-org/llama.cpp/pkgs/container/llama.cpp)
+- Базовый docker-образ: ghcr.io/ggml-org/llama.cpp:server
 
-**Build docker image:**
+**Собрать docker-образ:**
 
 ```bash
-git clone https://github.com/sergey31415926/Chatterbox.git
-cd Chatterbox
-docker build -t deepseek-chat .
+docker build -t chatterbox .
 ```
 
-**Run server locally inside container:**
+**Запуск локально внутри контейнера:**
+
+Опциональный флаг --health-check указывает путь к папке с тестами.
+
+В Windows консоли:
+
+```powershell
+docker run --rm -it `
+    -p 8080:8080 `
+    -v "${PWD}/tests:/tests" `
+    -v "${PWD}:/models" `
+    chatterbox `
+    --model /models/gemma-2-2b-it-Q6_K.gguf `
+    --host 0.0.0.0 `
+    --port 8080 `
+    --health-check /tests
+# Server is running on http://localhost:8080
+```
+
+В Linux консоли:
 
 ```bash
-docker run -p 8000:8000 deepseek-chat
-# Server is running on http://localhost:8000
+docker run --rm -it \
+    -p 8080:8080 \
+    -v "${PWD}/tests:/tests" \
+    -v "${PWD}:/models" \
+    chatterbox \
+    --model /models/gemma-2-2b-it-Q6_K.gguf \
+    --host 0.0.0.0 \
+    --port 8080 \
+    --health-check /tests
+# Server is running on http://localhost:8080
 ```

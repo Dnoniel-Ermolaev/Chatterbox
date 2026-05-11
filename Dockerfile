@@ -1,25 +1,15 @@
-FROM ghcr.io/ggerganov/llama.cpp:full
+FROM ghcr.io/ggml-org/llama.cpp:server
 
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    rm -rf /var/lib/apt/lists/*
+USER root
+RUN apt-get update && apt-get install -y curl sed jq grep coreutils && rm -rf /var/lib/apt/lists/*
 
-# Copy the GGUF model into the container
-# COPY DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf /models/model.gguf
-# Download model
-RUN mkdir -p /models && \
-    curl -L https://huggingface.co/SandLogicTechnologies/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf \
-    -o /models/model.gguf
+RUN find / -name "llama-server" -type f -executable 2>/dev/null || true
 
-# Install Python bindings
-ENV LLAMA_CPP_LIB=/llama.cpp/build/libllama.so
-RUN pip3 install llama-cpp-python
+WORKDIR /app
 
-COPY index.html .
-COPY app.py .
+COPY benchmark.sh /app/benchmark.sh
+COPY entrypoint.sh /app/entrypoint.sh
 
-# Override the default entrypoint
-ENTRYPOINT []
+RUN chmod +x /app/benchmark.sh /app/entrypoint.sh
 
-EXPOSE 8000
-CMD ["python3", "app.py"]
+ENTRYPOINT ["/app/entrypoint.sh"]
